@@ -1,7 +1,6 @@
-Icon="code"
-Menu="UserPreferences"
-Title="enclosure-led"
-Tag="code"
+Icon="flag"
+Menu="Utilities"
+Title="Enclosure LED"
 ---
 <link type="text/css" rel="stylesheet" href="<?=autov('/plugins/enclosure-led/css/tablesorter.css');?>">
 <link type="text/css" rel="stylesheet" href="/plugins/enclosure-led/css/tablesorter-<?=($display['theme'] == 'white' || $display['theme'] == 'azure') ? 'white' : 'black';?>.css">
@@ -16,30 +15,25 @@ table.tablesorter tbody tr:nth-child(even) {
 }
 </style>
 
-<form markdown="1" id="package_form" name="package_settings" method="POST" action="/update.php" target="progressFrame">
 <input type="hidden" id="include" name="#include" value="/plugins/enclosure-led/include/ClearConfig.php"/>
-
 <div class="wrapper">
 <table class="tablesorter hover-highlight" id="tblPackages">
     <thead>
         <tr>
-            <th class="filter-name" data-placeholder="Search..."> Name </th>
-            <th class="filter-version" data-placeholder="by status"> Status </th>
-            <th class="sorter-metric filter-false" data-placeholder="by size" data-metric-name-full="byte|Byte|BYTE" data-metric-name-abbr="b|B"> Size </th>
-            <th class="filter-downloaded" data-placeholder="by download"> Downloaded </th>
-            <th class="filter-installed" data-placeholder="by install"> Installed </th>
-            <th class="filter-plugins" data-placeholder="Search..."> Plugins </th>
-            <th class="parser-false filter-false"><input class="checkall" type="checkbox"></th>
+            <th> Slot ID </th>
+            <th> Disk </th>
+            <th> Labels </th>
+            <th> Mountpoint </th>
+            <th> Size </th>
+            <th> Locate </th>
         </tr>
     </thead>
     <tbody>
     </tbody>
 </table>
 </div>
-<input onclick="packageQuery(1)" value="Check for Updates" type="button"><input class="reset" type="button" title="reset filters" value="Reset Filters">
-: <input id="btnApply" type="button" value="Apply"><input type="button" value="Done" onClick="done()">
+<input type="button" value="Done" onClick="done()">
 <input type="hidden" name="#file" value="enclosure-led/enclosure-led.cfg">
-</form>
 
 <script src="<?=autov('/plugins/enclosure-led/js/jquery.tablesorter.combined.min.js');?>"></script>
 <script src="<?=autov('/plugins/enclosure-led/js/parser-metric.min.js');?>"></script><script type="text/javascript" src="<?=autov('/webGui/javascript/jquery.switchbutton.js');?>"></script>
