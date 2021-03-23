@@ -1,5 +1,5 @@
 Icon="flag"
-Menu="Utilities"
+Menu="SystemInformation"
 Title="Enclosure LED"
 ---
 <link type="text/css" rel="stylesheet" href="<?=autov('/plugins/enclosure-led/css/tablesorter.css');?>">
@@ -24,6 +24,7 @@ table.tablesorter tbody tr:nth-child(even) {
             <th> Disk </th>
             <th> Labels </th>
             <th> Mountpoint </th>
+            <th> Model_Serial </th>
             <th> Size </th>
             <th> Locate </th>
         </tr>
@@ -32,6 +33,7 @@ table.tablesorter tbody tr:nth-child(even) {
     </tbody>
 </table>
 </div>
+
 <input type="button" value="Done" onClick="done()">
 <input type="hidden" name="#file" value="enclosure-led/enclosure-led.cfg">
 

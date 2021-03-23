@@ -20,6 +20,7 @@ function enclosureQuery() {
                 "<td>"+(disk.dev || '')+"</td>"+
                 "<td>"+disk.label+"</td>"+
                 "<td>"+disk.mountpoint+"</td>"+
+                "<td>"+disk.modelserial+"</td>"+
                 "<td>"+disk.size+"</td>"+
                 "<td><input class='pkgcheckbox' id='"+enclosure+':'+slot+"' type='checkbox' "+checked+">"+
                 "</tr>");

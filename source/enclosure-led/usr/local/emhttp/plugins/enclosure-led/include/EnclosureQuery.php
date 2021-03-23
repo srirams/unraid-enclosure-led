@@ -8,6 +8,7 @@ class Disk {
     public $dsn = null;
     public $sas_addr = null;
     public $locate = False;
+    public $modelserial = '';
 }
 
 function parse_sg_ses($dev) {
@@ -77,6 +78,7 @@ function get_enclosures() {
         $disk = new Disk();
         $disk->dev = $dev->name;
         $disk->size = $dev->size;
+        $disk->modelserial = $dev->model . '_' . $dev->serial;
         $disks[$dev->name] = $disk;
         if ($dev->children) {
             foreach ($dev->children as $part) {
@@ -97,6 +99,36 @@ function get_enclosures() {
                     $disk->label = $lsblk_disk->label;
                     $disk->mountpoint = $lsblk_disk->mountpoint;
                     $disk->size = $lsblk_disk->size;
+                    $disk->modelserial = $lsblk_disk->modelserial;
+                }
+            }
+        }
+    }
+
+    class MD {
+        public $dev = null;
+        public $name = null;
+    }
+
+    $mds = [];
+    $mdstat = file('/proc/mdstat');
+    foreach ($mdstat as $line) {
+        // assume that diskName always comes before rdevName
+        if (preg_match('/diskName.(\d+)=(.*)/', $line, $match)) {
+            $md = new MD();
+            $md->name = $match[2];
+            $mds[$match[1]] = $md;
+        }
+        if (preg_match('/rdevName.(\d+)=(.*)/', $line, $match)) {
+            $mds[$match[1]]->dev = $match[2];
+        }
+    }
+
+    foreach ($mds as $id => $md) {
+        foreach ($enclosures as $enclosure => $slots) {
+            foreach ($slots as $dsn => $disk) {
+                if ($disk->dev == $md->dev) {
+                    $disk->mountpoint .= $disk->mountpoint ? ', ' : '' . $md->name;
                 }
             }
         }
