@@ -26,7 +26,8 @@ table.tablesorter tbody tr:nth-child(even) {
             <th> Mountpoint </th>
             <th> Model_Serial </th>
             <th> Size </th>
-            <th> Locate </th>
+            <th> Avail </th>
+            <th> Free </th>
         </tr>
     </thead>
     <tbody>

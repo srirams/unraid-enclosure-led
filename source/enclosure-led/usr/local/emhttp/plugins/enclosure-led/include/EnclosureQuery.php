@@ -9,6 +9,7 @@ class Disk {
     public $sas_addr = null;
     public $locate = False;
     public $modelserial = '';
+    public $fsavail = '';
 }
 
 function parse_sg_ses($dev) {
@@ -65,49 +66,14 @@ function parse_lsscsi() {
     return $enclosures;
 }
 
-function get_enclosures() {
+function get_enclosures() {    
     $enclosures = parse_lsscsi();
-
-    exec("lsblk -OJ", $output);
-    $devices = json_decode(implode(PHP_EOL, $output));
     $disks = [];
-
-    foreach ($devices->blockdevices as $dev) {
-        if ($dev->type != 'disk')
-            continue;
-        $disk = new Disk();
-        $disk->dev = $dev->name;
-        $disk->size = $dev->size;
-        $disk->modelserial = $dev->model . '_' . $dev->serial;
-        $disks[$dev->name] = $disk;
-        if ($dev->children) {
-            foreach ($dev->children as $part) {
-                if (isset($part->label)) {
-                    $disk->label .= $disk->label ? ', ' : '' . $part->label;
-                }
-                if (isset($part->mountpoint)) {
-                    $disk->mountpoint .= $disk->mountpoint ? ', ' : '' . $part->mountpoint;
-                }
-            }
-        }
-    }
-
-    foreach ($disks as $lsblk_disk) {
-        foreach ($enclosures as $enclosure => $slots) {
-            foreach ($slots as $dsn => $disk) {
-                if ($disk->dev == $lsblk_disk->dev) {
-                    $disk->label = $lsblk_disk->label;
-                    $disk->mountpoint = $lsblk_disk->mountpoint;
-                    $disk->size = $lsblk_disk->size;
-                    $disk->modelserial = $lsblk_disk->modelserial;
-                }
-            }
-        }
-    }
-
+    
     class MD {
         public $dev = null;
         public $name = null;
+        public $fsavail = '';
     }
 
     $mds = [];
@@ -124,15 +90,58 @@ function get_enclosures() {
         }
     }
 
+    exec("lsblk -OJ", $output);
+    $devices = json_decode(implode(PHP_EOL, $output));    
+
+    foreach ($devices->blockdevices as $dev) {
+        if ($dev->type == 'disk') {
+            $disk = new Disk();
+            $disk->dev = $dev->name;
+            $disk->size = $dev->size;
+            $disk->modelserial = $dev->model . '_' . $dev->serial;
+            $disks[$dev->name] = $disk;
+            if ($dev->children) {
+                foreach ($dev->children as $part) {
+                    if (isset($part->label)) {
+                        $disk->label .= $disk->label ? ', ' : '' . $part->label;
+                    }
+                    if (isset($part->mountpoint)) {
+                        $disk->mountpoint .= $disk->mountpoint ? ', ' : '' . $part->mountpoint;
+                    }
+                }
+            }
+        } else if ($dev->type == 'md') {
+            foreach ($mds as $id => $md) {
+                if ($md->name == $dev->name) {
+                    $md->fsavail = $dev->fsavail;
+                }
+            }
+        }          
+    }
+    
+    foreach ($disks as $lsblk_disk) {
+        foreach ($enclosures as $enclosure => $slots) {
+            foreach ($slots as $dsn => $disk) {
+                if ($disk->dev == $lsblk_disk->dev) {
+                    $disk->label = $lsblk_disk->label;
+                    $disk->mountpoint = $lsblk_disk->mountpoint;
+                    $disk->size = $lsblk_disk->size;
+                    $disk->modelserial = $lsblk_disk->modelserial;
+                }
+            }
+        }
+    }
+    
     foreach ($mds as $id => $md) {
         foreach ($enclosures as $enclosure => $slots) {
             foreach ($slots as $dsn => $disk) {
                 if ($disk->dev == $md->dev) {
                     $disk->mountpoint .= $disk->mountpoint ? ', ' : '' . $md->name;
+                    $disk->fsavail = $md->fsavail;
                 }
             }
         }
-    }
+    }    
 
     return $enclosures;
 
