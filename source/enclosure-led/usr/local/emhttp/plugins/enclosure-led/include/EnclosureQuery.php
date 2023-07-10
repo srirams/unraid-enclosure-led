@@ -18,8 +18,8 @@ function parse_sg_ses($dev) {
     $disk = null;
     foreach ($output as $line) {
         if ($line[0] != ' ') {
-            if (preg_match('/Slot (\d+) \[(\d+),(\d+)\]  Element type: Array device slot/', $line, $match)) {
-                $dsn = $match[3];
+            if (preg_match('/.*?\[(\d+),(\d+)\].*?device slot/i', $line, $match)) {
+                $dsn = $match[2];
                 $disk = new Disk();
                 $disk->dsn = $dsn;
                 $data[$dsn] = $disk;
@@ -73,6 +73,7 @@ function get_enclosures() {
     class MD {
         public $dev = null;
         public $name = null;
+        public $num = 0;
         public $fsavail = '';
     }
 
@@ -80,10 +81,13 @@ function get_enclosures() {
     $mdstat = file('/proc/mdstat');
     foreach ($mdstat as $line) {
         // assume that diskName always comes before rdevName
-        if (preg_match('/diskName.(\d+)=(.*)/', $line, $match)) {
+        if (preg_match('/diskNumber.(\d+)=(.*)/', $line, $match)) {
             $md = new MD();
-            $md->name = $match[2];
+            $md->num = $match[2];
             $mds[$match[1]] = $md;
+        }
+        if (preg_match('/diskName.(\d+)=(.*)/', $line, $match)) {
+            $mds[$match[1]]->name = $match[2];
         }
         if (preg_match('/rdevName.(\d+)=(.*)/', $line, $match)) {
             $mds[$match[1]]->dev = $match[2];
@@ -133,10 +137,14 @@ function get_enclosures() {
     }
     
     foreach ($mds as $id => $md) {
+        if (!$md->dev) continue;
         foreach ($enclosures as $enclosure => $slots) {
             foreach ($slots as $dsn => $disk) {
                 if ($disk->dev == $md->dev) {
-                    $disk->mountpoint .= $disk->mountpoint ? ', ' : '' . $md->name;
+                    if (!$md->name)
+                        $disk->mountpoint = 'parity';
+                    else
+                        $disk->mountpoint = 'md' . $md->num;
                     $disk->fsavail = $md->fsavail;
                 }
             }
